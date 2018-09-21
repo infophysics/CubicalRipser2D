@@ -66,3 +66,4 @@ To execute CubicalRipser,
 ## about speed
 
 In 2 and 3 dimensional case, we believe that CubicalRipser is much faster than DIPHA.
+# CubicalRipser2D
