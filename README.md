@@ -1,69 +1,71 @@
-# CubicalRipser_2dim : calculator of persistence pair for 2 dimensional pixel data
+# CubicalRipser2D : Calculator of Persistent Homology of 2D Cubical Toplexes
 
-copyright by Takeki Sudo and Kazushi Ahara, Meiji University, 2018
+Copyright by Takeki Sudo and Kazushi Ahara, Meiji University, 2018
+(python bindings and modifications by Nicholas Carrara 2018)
 
-## description
+The following is a modified version of the original software written by T. Sudo and K. Ahara, which can be found here; https://github.com/CubicalRipser/CubicalRipser_2dim
 
-C++ system for computation of Cubical persistence pairs
-Copyright 2018 Takeki Sudo and Kazushi Ahara, Meiji University.
-CubicalRipser is free software: you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your option)
-any later version.
+## Installing from source
 
-CubicalRipser is deeply depending on 'Ripser', software for Vietoris-Rips 
-persitence pairs by Ulrich Bauer, 2015-2016.  We appreciate Ulrich very much.
-We rearrange his codes of Ripser and add some new ideas for optimization on it 
-and modify it for calculation of a Cubical filtration.
-This part of CubicalRiper is a calculator of cubical persistence pairs for 
-2 dimensional pixel data. The input data format conforms to that of DIPHA and of PERSEUS.
+Requirements: You must have CMake>=2.8.12 and a C++11 compatible compiler (GCC>=4.8) to build.
 
-## how to make and execute
+```
+  git clone https://github.com/infophysics/TDA.git
+  cd TDA
+  sudo python3 setup.py install
+```
+## Implementation
+```python
+import Cube2D
+from Cube2D import CubicalRipser2D, Filter2D
 
-To make an exe file, 
+#    create a 5x5 grid with the homology of S^1
+grid = [[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]]
 
-    % make
-
-To execute CubicalRipser, 
-
-    % CR2 [option] [input_filename]
-
-## option:
-
-    --help   
-
-       print options
-
-    --format     
-
-        use the specified file format for the input. Options are:
-	  
-        dipha          (pixel data in DIPHA file format; default
-       
-        perseus        (pixel data in Perseus file format)
-
-    --threshold <t>  
-  
-        compute cubical complexes up to birth time <t>
+#    write this data to file
+with open("square.csv", 'w') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',')
+    writer.writerows(grid)
     
-    --method 
+#   try 2D von neumann filter
+filt = Filter2D()
+filt.loadBinaryFromFile("square.csv")
+filt.filterBinaryVonNeumann(10)
+filt.saveBinaryFiltration("square2.csv")
 
-        method to compute the persistent homology of the cubical complexes. Options are:
+#    create CubicalRipser2D object
+cube2D = CubicalRipser2D()
 
-            link_find      (calculating the 0-dim PP, use 'link_find' algorithm; default)
+#    convert the filtration to DIPHA format
+convert_csv_to_dipha("square2.csv", "square_dipha.csv")
 
-            compute_pairs  (calculating the 0-dim PP, use 'compute_pairs' algorithm)
+#    compute the barcode and plot the persistence diagram
+cube2D.ComputeBarcode("square_dipha.csv", "test.csv", "DIPHA", "LINKFIND", 10, True)
+barcode = cube2D.getBarcode()
+plot_persistence_diagram(barcode)
+```
 
-    --output [output_filename] 
+For more examples on possible calls, please see the Jupyter Notebook example.
 
-        name of file that will contain the persistence diagram. If the input_filename ends '.csv' then CR2 
-	outputs a CSV file. Otherwise, output file is DIPHA diagram file.
 
-    --print
 
-        print persistence pairs on your console.
+### Support
 
-## about speed
+* Bugs: Please report bugs to the [issue tracker on Github](https://github.com/infophysics/CubicalRipser2D/issues) such that we can keep track of them and eventually fix them.  Please explain how to reproduce the issue (including code) and which system you are running on.
+* Help: Help can be provided also via the issue tracker by tagging your issue with 'question'
+* Contributing:  Please fork this repository then make a pull request.  In this pull request, explain the details of your change and include tests.
 
-In 2 and 3 dimensional case, we believe that CubicalRipser is much faster than DIPHA.
-# CubicalRipser2D
+## Technical implementation
+
+This package is a [pybind11](https://pybind11.readthedocs.io/en/stable/intro.html) wrapper of several persistent homology algorithm implementations as well as general purpose plotting and a computation of the [Persistent Homology Dimension](https://people.math.osu.edu/schweinhart.2/MeasuringShapeWithTopology.pdf) (written by M. Tallon)
+
+* Help from Chris Tunnel, which included a great [binding tutorial](https://indico.cern.ch/event/694818/contributions/2985778/attachments/1682465/2703470/PyHEPTalk.pdf)
+* Implementation also based on [this](http://www.benjack.io/2018/02/02/python-cpp-revisited.html)
+
+See AUTHORS.md for information on the developers.
+
+## Citation
+
+When you use `CubicalRipser2D`, please say so in your slides or publications (for publications, see Zenodo link above).  You can mention this in addition to how you cite CubicalRipser2D.  This is important for us being able to get funding to support this project.
+
+
