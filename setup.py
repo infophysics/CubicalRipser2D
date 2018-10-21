@@ -65,17 +65,35 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args,
                               cwd=self.build_temp)
         print()  # Add an empty line for cleaner output
-
 setup(
-    name='cubicalRipser',
-    version='0.1',
-    author='Nicholas Carrara',
+    name='cube2d',
+    version='1.0',
+    author='Nicholas Carrara, Takeki Sudo and Kazushi Ahara',
     author_email='ncarrara@albany.edu',
     description='Python bindings for CubicalRipser_2dim',
     long_description='',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    ext_modules=[CMakeExtension('cubicalRipser/cubicalRipser')],
+    ext_modules=[CMakeExtension('cube2d/cube2d')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
+    include_package_data=True,
+    project_urls={
+        'Cube2D source': 'https://github.com/infophysics/CubicalRipser2D'
+    },
+    classifiers = [
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: C++',
+        'Intended Audience :: Science/Research',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Scientific/Engineering',
+        'Operating System :: OS Independent',
+    ]
 )

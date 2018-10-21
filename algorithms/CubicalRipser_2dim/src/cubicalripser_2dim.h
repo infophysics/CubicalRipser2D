@@ -1,9 +1,4 @@
-/* compute_pairs.h
-
-Copyright 2017-2018 Takeki Sudo and Kazushi Ahara.
-
-This file is part of CubicalRipser_2dim.
-
+/*
 CubicalRipser: C++ system for computation of Cubical persistence pairs
 Copyright 2017-2018 Takeki Sudo and Kazushi Ahara.
 CubicalRipser is free software: you can redistribute it and/or modify it under
@@ -28,26 +23,42 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+
+
+#include <fstream>
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <vector>
 #include <unordered_map>
+#include <string>
+#include <cstdint>
 
-template <class Key, class T> class hash_map : public std::unordered_map<Key, T> {};
+#include "dense_cubical_grids.h"
+#include "birthday_index.h"
+#include "columns_to_reduce.h"
+#include "simplex_coboundary_enumerator.h"
+#include "write_pairs.h"
+#include "union_find.h"
+#include "compute_pairs.h"
+#include "../../../src/Barcode.h"
 
-class ComputePairs
-{
+using namespace std;
 
-public:
-	DenseCubicalGrids* dcg;
-	ColumnsToReduce* ctr;
-	hash_map<int, int> pivot_column_index;
-	int ax, ay;
-	int dim;
-	vector<WritePairs> *wp;
-	bool print;
+enum calculation_method { LINKFIND, COMPUTEPAIRS};
 
-	ComputePairs(DenseCubicalGrids* _dcg, ColumnsToReduce* _ctr, vector<WritePairs> &_wp, const bool _print);
-	void compute_pairs_main();
-	void outputPP(int _dim, double _birth, double _death);
-	BirthdayIndex pop_pivot(priority_queue<BirthdayIndex, vector<BirthdayIndex>, BirthdayIndexComparator>& column);
-	BirthdayIndex get_pivot(priority_queue<BirthdayIndex, vector<BirthdayIndex>, BirthdayIndexComparator>& column);
-	void assemble_columns_to_reduce();
+class CubicalRipser2D{
+	
+	private:
+		Barcode m_Barcode;
+	public:
+		CubicalRipser2D();
+		virtual ~CubicalRipser2D();
+		void print_usage_and_exit(int exit_code);
+		void ComputeBarcode(const char* filename, string output_filename, string format, string method, double threshold, bool print);			
+
+		Barcode getBarcode(){return m_Barcode;}	
 };
+
+
+
