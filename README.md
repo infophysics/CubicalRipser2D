@@ -10,8 +10,8 @@ The following is a modified version of the original software written by T. Sudo 
 Requirements: You must have CMake>=2.8.12 and a C++11 compatible compiler (GCC>=4.8) to build.
 
 ```
-  git clone https://github.com/infophysics/TDA.git
-  cd TDA
+  git clone https://github.com/infophysics/CubicalRipser2D.git
+  cd CubicalRipser2D
   sudo python3 setup.py install
 ```
 ## Implementation
