@@ -1,4 +1,4 @@
-from cube2d.cube2d import CubicalRipser2D, Filter2D
+from cube2d.cube2d import CubicalRipser2D, Filter2D, Graph2D
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,7 +14,7 @@ import ipywidgets as widgets
 from IPython.display import display
 import warnings
 warnings.filterwarnings('ignore')
-
+plt.style.use("ggplot")
 
 '''
     TDA package for Topological Data Analysis tools
@@ -297,18 +297,19 @@ def compute_2DPHD_from_file(input_file, show_plot=True, output_file=''):
 
 
 if __name__ == "__main__":
-    grid = [[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1]]
+    grid = [[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0]]
     with open("square.csv", 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerows(grid)
     #   try 2D von neumann filter
     filt = Filter2D()
     filt.loadBinaryFromFile("square.csv")
-    filt.filterBinaryVonNeumann(10)
+    filt.filterBinaryL2(10)
     filt.saveBinaryFiltration("square2.csv")
     cube2D = CubicalRipser2D()
     convert_csv_to_dipha("square2.csv", "square_dipha.csv")
-    cube2D.ComputeBarcode("square_dipha.csv", "test.csv", "DIPHA", "LINKFIND", 10, True)
+    cube2D.ComputeBarcode("square_dipha.csv", "test.csv", "DIPHA", "COMPUTEPAIRS", 10, True)
     barcode = cube2D.getBarcode()
+    print(barcode)
     plot_persistence_diagram(barcode)
 

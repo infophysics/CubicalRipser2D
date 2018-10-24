@@ -5,7 +5,7 @@ project(cube2d)
 set(SOURCE_DIR "algorithms/")
 # Tell CMake that headers are also in SOURCE_DIR
 include_directories(${SOURCE_DIR})
-set(SOURCES "${SOURCE_DIR}/CubicalRipser_2dim/src/cubicalripser_2dim.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/dense_cubical_grids.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/birthday_index.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/columns_to_reduce.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/simplex_coboundary_enumerator.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/union_find.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/write_pairs.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/compute_pairs.cpp" "src/Filter.cpp")
+set(SOURCES "${SOURCE_DIR}/CubicalRipser_2dim/src/cubicalripser_2dim.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/dense_cubical_grids.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/birthday_index.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/columns_to_reduce.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/simplex_coboundary_enumerator.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/union_find.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/write_pairs.cpp" "${SOURCE_DIR}/CubicalRipser_2dim/src/compute_pairs.cpp" "src/Filter.cpp" "src/Graph2D.cpp")
 include_directories("${SOURCE_DIR}/include") 
 
 #	fpermissive flag for perseus
