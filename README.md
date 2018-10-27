@@ -32,7 +32,7 @@ Requirements: You must have CMake>=2.8.12 and a C++11 compatible compiler (GCC>=
  #   try 2D von neumann filter
  filt = Filter2D()
  filt.loadBinaryFromFile("square.csv")
- filt.filterBinaryVonNeumann(10)
+ filt.filterBinaryL1(10)
  filt.saveBinaryFiltration("square2.csv")
  
  #    create CubicalRipser2D object
