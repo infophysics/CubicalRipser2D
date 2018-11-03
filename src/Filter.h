@@ -23,6 +23,7 @@ class Filter2D{
 		
 	public:
 		Filter2D();
+		Filter2D(std::vector<std::vector<double> > binary);
 		virtual ~Filter2D();
 		void loadBinaryFromFile(const char* input_file);
 		void loadContinuousFromFile(const char* input_file);
@@ -36,4 +37,6 @@ class Filter2D{
 		void filter3StateAsBinary(double alive);		
 		//	Save filtration
 		void saveBinaryFiltration(const char* output_file);
+		
+		std::vector<std::vector<double> > getBinaryFiltration(){ return m_Binary; }
 };

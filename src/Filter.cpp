@@ -6,6 +6,7 @@ using namespace std;
 
 //	Filter 2D
 Filter2D::Filter2D(){}
+Filter2D::Filter2D(std::vector<std::vector<double> > binary) : m_Binary(binary) {}
 Filter2D::~Filter2D(){}
 
 void Filter2D::loadBinaryFromFile(const char* input_file){

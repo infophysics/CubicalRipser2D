@@ -119,6 +119,26 @@ DenseCubicalGrids::DenseCubicalGrids(const string& filename, double _threshold, 
 	} 
 }
 
+DenseCubicalGrids::DenseCubicalGrids(std::vector<std::vector<double> > data, double _threshold)  {
+	
+	threshold = _threshold;
+	ax = data.size();
+	ay = data[0].size();
+	assert(0 < ax && ax < 2000 && 0 < ay && ay < 1000);
+	cout << "ax : ay = " << ax << " : " << ay << endl;
+
+	for (int y = 0; y < ay + 2; ++y) {
+		for (int x = 0; x < ax + 2; ++x) {
+			if(0 < x && x <= ax && 0 < y && y <= ay){
+					dense2[x][y] = data[x-1][y-1];
+			}
+			else {
+				dense2[x][y] = threshold+1;
+			}
+		}
+	}
+}
+
 
 double DenseCubicalGrids::getBirthday(int index, int dim){
 	int cx = index & 0x07ff;

@@ -45,18 +45,33 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace std;
 
-enum calculation_method { LINKFIND, COMPUTEPAIRS};
-
 class CubicalRipser2D{
 	
 	private:
+	
 		Barcode m_Barcode;
+		DenseCubicalGrids* dcg;
+		ColumnsToReduce* ctr;
+		ComputePairs* cp;
+		
+		const char* file = "";
+		file_format format_type = PERSEUS;
+		std::vector<WritePairs> writepairs; // dim birth death
+		double thres;
+		
+		
 	public:
 		CubicalRipser2D();
+		CubicalRipser2D(const char* filename, string format, double threshold);
+		CubicalRipser2D(std::vector<std::vector<double> > data, double threshold);
 		virtual ~CubicalRipser2D();
 		void print_usage_and_exit(int exit_code);
-		void ComputeBarcode(const char* filename, string output_filename, string format, string method, double threshold, bool print);			
-
+		
+		//	Compute Barcode
+		void ComputeBarcode(const char* filename, string output_filename, string format, double threshold, bool print);			
+		void ComputeBarcode(const char* filename, string format, double threshold, bool print);
+		void ComputeBarcode();
+		
 		Barcode getBarcode(){return m_Barcode;}	
 };
 

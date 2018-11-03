@@ -51,9 +51,6 @@ void CubicalRipser2D::print_usage_and_exit(int exit_code) {
 	     << "                     dipha          (pixel data in DIPHA file format; default)" << endl
 	     << "                     perseus        (pixel data in Perseus file format)" << endl
 	     << "  --threshold <t>  compute cubical complexes up to birth time <t>" << endl
-	     << "  --method         method to compute the persistent homology of the cubical complexes. Options are" << endl
-	     << "                     link_find      (calculating the 0-dim PP, use 'link_find' algorithm; default)" << endl
-	     << "                     compute_pairs  (calculating the 0-dim PP, use 'compute_pairs' algorithm)" << endl
 	     << "  --output         name of file that will contain the persistence diagram " << endl
 	     << "  --print          print persistence pairs on your console" << endl
 	     << endl;
@@ -61,51 +58,62 @@ void CubicalRipser2D::print_usage_and_exit(int exit_code) {
 	exit(exit_code);
 }
 
-void CubicalRipser2D::ComputeBarcode(const char* filename, string output_filename, string format, string method, double threshold, bool print){
+CubicalRipser2D::CubicalRipser2D(const char* filename, string format, double threshold) : file(filename) {
+	
+	ifstream file_stream(file);
+	if (filename && file_stream.fail()) {
+		cerr << "ERROR! Couldn't open file " << filename << std::endl;
+		exit(-1);
+	}
+
+	if (format == "DIPHA"){
+		format_type = DIPHA;
+	}
+	
+	if ((file != NULL) && (file[0] != '\0')){
+		dcg = new DenseCubicalGrids(file, threshold, format_type);
+	}
+	
+	thres = threshold;
+	
+}
+
+CubicalRipser2D::CubicalRipser2D(std::vector<std::vector<double> > data, double threshold){
+	//	Generate the array from file
+	dcg = new DenseCubicalGrids(data, threshold);
+	thres = threshold;
+}
+
+void CubicalRipser2D::ComputeBarcode(const char* filename, string output_filename, 
+									 string format, double threshold, bool print){
+		
 		ifstream file_stream(filename);
 		if (filename && file_stream.fail()) {
-			cerr << "couldn't open file " << filename << std::endl;
+			cerr << "ERROR! Couldn't open file " << filename << std::endl;
 			exit(-1);
 		}
 
-		vector<WritePairs> writepairs; // dim birth death
 		writepairs.clear();
-		file_format format_type = PERSEUS;
+		
 		if (format == "DIPHA"){
 			format_type = DIPHA;
 		}
 		
-		calculation_method calc_method = LINKFIND;
-		if (method == "COMPUTEPAIRS"){
-			calc_method = COMPUTEPAIRS;
-		}
+		//	Generate the array from file
+		dcg = new DenseCubicalGrids(filename, threshold, format_type);
 		
-		DenseCubicalGrids* dcg = new DenseCubicalGrids(filename, threshold, format_type);
-		ColumnsToReduce* ctr = new ColumnsToReduce(dcg);
-		
-		switch(calc_method){
-			case LINKFIND:
-			{
-				JointPairs* jp = new JointPairs(dcg, ctr, writepairs, print);
-				jp->joint_pairs_main(); // dim0
-
-				ComputePairs* cp = new ComputePairs(dcg, ctr, writepairs, print);
-				cp->compute_pairs_main(); // dim1
+		//	Set up columns to reduce
+		ctr = new ColumnsToReduce(dcg);
 			
-			break;
-			}
-			
-			case COMPUTEPAIRS:
-			{
-				ComputePairs* cp = new ComputePairs(dcg, ctr, writepairs, print);
-				cp->compute_pairs_main(); // dim0
-				cp->assemble_columns_to_reduce();
-
-				cp->compute_pairs_main(); // dim1
+		//	Initialize ComputePairs object
+		cp = new ComputePairs(dcg, ctr, writepairs, print);
+		cp->compute_pairs_main(); // dim0
 		
-			break;
-			}
-		}
+		cp->assemble_columns_to_reduce();
+
+		cp->compute_pairs_main(); // dim1
+		
+
 		//	Save barcode
 		int64_t p = writepairs.size();
 		for(int64_t i = 0; i < p; ++i){
@@ -118,55 +126,121 @@ void CubicalRipser2D::ComputeBarcode(const char* filename, string output_filenam
 		
 		ofstream writing_file;
 
-			string extension = ".csv";
-			if(equal(extension.rbegin(), extension.rend(), output_filename.rbegin()) == true){
-				string outname = output_filename;
-				writing_file.open(outname, ios::out);
+		string extension = ".csv";
+		if(equal(extension.rbegin(), extension.rend(), output_filename.rbegin()) == true){
+			string outname = output_filename;
+			writing_file.open(outname, ios::out);
 
-				if(!writing_file.is_open()){
-					cout << " error: open file for output failed! " << endl;
-				}
+			if(!writing_file.is_open()){
+				cout << "ERROR! Open file for output failed! " << endl;
+			}
 
 				
-				for(int64_t i = 0; i < p; ++i){
-					if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == threshold+1){}
-					else{writing_file << writepairs[i].getDimension() << ",";
+			for(int64_t i = 0; i < p; ++i){
+				if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == threshold+1){}
+				else{writing_file << writepairs[i].getDimension() << ",";
 
-					writing_file << writepairs[i].getBirth() << ",";
-					writing_file << writepairs[i].getDeath() << endl;
-					}
+				writing_file << writepairs[i].getBirth() << ",";
+				writing_file << writepairs[i].getDeath() << endl;
 				}
-				writing_file.close();
-			} else {
+			}
+			writing_file.close();
+		} else {
 
-				writing_file.open(output_filename, ios::out | ios::binary);
+			writing_file.open(output_filename, ios::out | ios::binary);
 
-				if(!writing_file.is_open()){
-					cout << " error: open file for output failed! " << endl;
+			if(!writing_file.is_open()){
+				cout << "ERROR! Open file for output failed! " << endl;
+			}
+
+			int64_t mn = 8067171840;
+			writing_file.write((char *) &mn, sizeof( int64_t )); // magic number
+			int64_t type = 2;
+			writing_file.write((char *) &type, sizeof( int64_t )); // type number of PERSISTENCE_DIAGRAM
+			int64_t p = writepairs.size();
+			cout << "the number of pairs : " << p << endl;
+			writing_file.write((char *) &p, sizeof( int64_t )); // number of points in the diagram p
+			for(int64_t i = 0; i < p; ++i){
+				if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == threshold+1){}
+				else{
+				int64_t writedim = writepairs[i].getDimension();
+				writing_file.write((char *) &writedim, sizeof( int64_t )); // dim
+
+				double writebirth = writepairs[i].getBirth();
+				writing_file.write((char *) &writebirth, sizeof( double )); // birth
+				
+				double writedeath = writepairs[i].getDeath();
+				writing_file.write((char *) &writedeath, sizeof( double )); // death
 				}
+			}
+			writing_file.close();
+		}		
+}
 
-				int64_t mn = 8067171840;
-				writing_file.write((char *) &mn, sizeof( int64_t )); // magic number
-				int64_t type = 2;
-				writing_file.write((char *) &type, sizeof( int64_t )); // type number of PERSISTENCE_DIAGRAM
-				int64_t p = writepairs.size();
-				cout << "the number of pairs : " << p << endl;
-				writing_file.write((char *) &p, sizeof( int64_t )); // number of points in the diagram p
-				for(int64_t i = 0; i < p; ++i){
-					if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == threshold+1){}
-					else{
-					int64_t writedim = writepairs[i].getDimension();
-					writing_file.write((char *) &writedim, sizeof( int64_t )); // dim
+void CubicalRipser2D::ComputeBarcode(const char* filename, string format, double threshold, bool print){
+	
+		ifstream file_stream(filename);
+		if (filename && file_stream.fail()) {
+			cerr << "ERROR! Couldn't open file " << filename << std::endl;
+			exit(-1);
+		}
 
-					double writebirth = writepairs[i].getBirth();
-					writing_file.write((char *) &writebirth, sizeof( double )); // birth
-					
-					double writedeath = writepairs[i].getDeath();
-					writing_file.write((char *) &writedeath, sizeof( double )); // death
-					}
-				}
-				writing_file.close();
-			}		
+		writepairs.clear();
+
+		if (format == "DIPHA"){
+			format_type = DIPHA;
+		}
+		
+		//	Generate the array from file
+		dcg = new DenseCubicalGrids(filename, threshold, format_type);
+		
+		//	Set up columns to reduce
+		ctr = new ColumnsToReduce(dcg);
+			
+		//	Initialize ComputePairs object
+		cp = new ComputePairs(dcg, ctr, writepairs, print);
+		cp->compute_pairs_main(); // dim0
+		
+		cp->assemble_columns_to_reduce();
+
+		cp->compute_pairs_main(); // dim1
+		
+
+		//	Save barcode
+		int64_t p = writepairs.size();
+		for(int64_t i = 0; i < p; ++i){
+			if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == threshold+1){}
+			else{
+			std::vector<double> x = {double(writepairs[i].getDimension()),double(writepairs[i].getBirth()), double(writepairs[i].getDeath())};
+			m_Barcode.push_back(x);
+			}
+		}
 }
 
 
+void CubicalRipser2D::ComputeBarcode(){		
+	
+		writepairs.clear();
+		
+		//	Set up columns to reduce
+		ctr = new ColumnsToReduce(dcg);
+			
+		//	Initialize ComputePairs object
+		cp = new ComputePairs(dcg, ctr, writepairs, false);
+		cp->compute_pairs_main(); // dim0
+		
+		cp->assemble_columns_to_reduce();
+
+		cp->compute_pairs_main(); // dim1
+		
+
+		//	Save barcode
+		int64_t p = writepairs.size();
+		for(int64_t i = 0; i < p; ++i){
+			if (writepairs[i].getDimension() == 1 && writepairs[i].getDeath() == thres+1){}
+			else{
+			std::vector<double> x = {double(writepairs[i].getDimension()),double(writepairs[i].getBirth()), double(writepairs[i].getDeath())};
+			m_Barcode.push_back(x);
+			}
+		}
+}

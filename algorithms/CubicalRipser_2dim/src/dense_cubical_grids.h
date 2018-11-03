@@ -29,6 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include <string>
+#include <vector>
 
 enum file_format { DIPHA, PERSEUS };
 
@@ -41,6 +42,8 @@ public:
 	double dense2[2048][1024];
 	file_format format;
 
-	DenseCubicalGrids(const std::string& filename, double _threshold, file_format _format) ; 
+	DenseCubicalGrids(const std::string& filename, double _threshold, file_format _format); 
+	DenseCubicalGrids(std::vector<std::vector<double> > data, double _threshold);
+	
 	double getBirthday(int index, int dim);
 };

@@ -42,7 +42,6 @@ int main(int argc, char** argv){
 	const char* filename = nullptr;
 	string output_filename = "answer_2dim.diagram"; //default name
 	file_format format = DIPHA;
-	calculation_method method = LINKFIND;
 	double threshold = 99999;
 	bool print = false;
 
@@ -64,15 +63,6 @@ int main(int argc, char** argv){
 			} else {
 				print_usage_and_exit(-1);
 			}
-		} else if(arg == "--method") {
-			string parameter = string(argv[++i]);
-			if (parameter == "link_find") {
-				method = LINKFIND;
-			} else if (parameter == "compute_pairs") {
-				method = COMPUTEPAIRS;
-			} else {
-				print_usage_and_exit(-1);
-			}
 		} else if (arg == "--output") {
 			output_filename = string(argv[++i]);
 		} else if(arg == "--print"){
@@ -84,7 +74,7 @@ int main(int argc, char** argv){
 	}
 	
 	ripser = CubicalRipser2D();
-	ripser.ComputeBarcode(filename, output_filename, format, method, threshold, print);
+	ripser.ComputeBarcode(filename, output_filename, format, threshold, print);
 	return 0;
 
 }    

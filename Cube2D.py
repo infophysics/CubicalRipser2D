@@ -1,4 +1,4 @@
-from cube2d.cube2d import CubicalRipser2D, Filter2D, Graph2D
+from cube2d.cube2d import CubicalRipser2D, Filter2D
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -126,6 +126,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
     else:
         max_death += 1
     max_both = max(max_birth, max_death)
+    y = np.linspace(0, max_both, 2)
     #  find unique dimensions    
     unique_dims = []
     for dim in dims:
@@ -141,15 +142,15 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
         for d in range(len(death_times)):
             if death_times[d] == -99999:
                 death_times[d] = max_death
-        y = np.linspace(0, max_both, 2)
         axs.plot(y, y, color='g', linestyle='--')
         axs.scatter(birth_times, death_times)
         if max_death != threshold:
-            axs.axhline(y = max_death, label="$\infty$")
+            axs.axhline(y = max_death-1, label="$\infty$", color='k')
         axs.set_xlabel('Birth Time')
         axs.set_ylabel('Death Time')
         axs.set_title('Persistence Diagram for degree $H_%s$' % 0)
         axs.grid(True)
+        axs.legend()
         if save_fig:
             fig.savefig(save_fig)
     else:
@@ -166,12 +167,13 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
                 y = np.linspace(0, max_both, 2)
                 axs[j].plot(y, y, color='g', linestyle='--')
                 if max_death != threshold:
-                    axs[j].axhline(y = max_death, label="$\infty$")
+                    axs[j].axhline(y = max_death-1, label="$\infty$", color='k')
                 axs[j].scatter(birth_times, death_times, color='b')
                 axs[j].set_xlabel('Birth Time')
                 axs[j].set_ylabel('Death Time')
                 axs[j].set_title('Persistence Diagram for degree $H_%s$' % j)
                 axs[j].grid(True)
+                axs[j].legend()
             if save_fig:
                 fig.savefig(save_fig)
         #   Or together
@@ -185,7 +187,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
                         death_times[d] = max_death
                 axs.scatter(birth_times, death_times, label='$H_%s$' % j)
             if max_death != threshold:
-                    axs.axhline(y = max_death, label="$\infty$")
+                    axs.axhline(y = max_death-1, label="$\infty$", color='k')
             y = np.linspace(0, max_both, 2)
             axs.plot(y, y, color='g', linestyle='--')
             axs.set_xlabel('Birth Time')
@@ -196,7 +198,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
             if save_fig:
                 fig.savefig(save_fig)
 
-plt.show()
+    plt.show()
 
 
 def plot_persistence_diagram_from_file(life_death_file, split=True):
@@ -336,8 +338,22 @@ if __name__ == "__main__":
     filt.saveBinaryFiltration("square2.csv")
     cube2D = CubicalRipser2D()
     convert_csv_to_dipha("square2.csv", "square_dipha.csv")
-    cube2D.ComputeBarcode("square_dipha.csv", "test.csv", "DIPHA", "COMPUTEPAIRS", 10, True)
+    cube2D.ComputeBarcode("square_dipha.csv", "test.csv", "DIPHA", 10, True)
     barcode = cube2D.getBarcode()
+    plot_persistence_diagram(barcode)
+
+    grid = [[0,0,1,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,1,0,0]]
+    filt = Filter2D(grid)
+    filt.filterBinaryL2(10)
+    cube2D = CubicalRipser2D(filt.getBinaryFiltration(), 10)
+    cube2D.ComputeBarcode()
+    barcode = cube2D.getBarcode()
+    plot_persistence_diagram(barcode)
+
+    grid = [[2,2,2],[2,3,2],[2,2,2]]
+    cube2D_2 = CubicalRipser2D(grid, 4);
+    cube2D_2.ComputeBarcode()
+    barcode = cube2D_2.getBarcode()
     print(barcode)
     plot_persistence_diagram(barcode)
 
