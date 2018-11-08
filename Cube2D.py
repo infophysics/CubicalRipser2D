@@ -13,6 +13,9 @@ import scipy.interpolate as interp
 import ipywidgets as widgets
 from IPython.display import display
 import warnings
+from multiprocessing import Pool, TimeoutError
+import time
+import os
 warnings.filterwarnings('ignore')
 plt.style.use("ggplot")
 
@@ -114,7 +117,7 @@ def save_binary_cells_to_point_cloud(input_array, output_file):
 def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
     dims = [barcode[i][0] for i in range(len(barcode))]
     for d in range(len(barcode)):
-        if barcode[d][2] == threshold:
+        if barcode[d][2] == threshold+1:
             barcode[d][2] = -99999
     #  find max death value
     deaths = [barcode[i][2] for i in range(len(barcode))]
@@ -145,7 +148,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
         axs.plot(y, y, color='g', linestyle='--')
         axs.scatter(birth_times, death_times)
         if max_death != threshold:
-            axs.axhline(y = max_death-1, label="$\infty$", color='k')
+            axs.axhline(y = max_death, label="$\infty$", color='k')
         axs.set_xlabel('Birth Time')
         axs.set_ylabel('Death Time')
         axs.set_title('Persistence Diagram for degree $H_%s$' % 0)
@@ -167,7 +170,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
                 y = np.linspace(0, max_both, 2)
                 axs[j].plot(y, y, color='g', linestyle='--')
                 if max_death != threshold:
-                    axs[j].axhline(y = max_death-1, label="$\infty$", color='k')
+                    axs[j].axhline(y = max_death, label="$\infty$", color='k')
                 axs[j].scatter(birth_times, death_times, color='b')
                 axs[j].set_xlabel('Birth Time')
                 axs[j].set_ylabel('Death Time')
@@ -187,7 +190,7 @@ def plot_persistence_diagram(barcode, split=True, threshold=-1, save_fig=''):
                         death_times[d] = max_death
                 axs.scatter(birth_times, death_times, label='$H_%s$' % j)
             if max_death != threshold:
-                    axs.axhline(y = max_death-1, label="$\infty$", color='k')
+                    axs.axhline(y = max_death, label="$\infty$", color='k')
             y = np.linspace(0, max_both, 2)
             axs.plot(y, y, color='g', linestyle='--')
             axs.set_xlabel('Birth Time')
@@ -311,7 +314,7 @@ def compute_2DPHD(barcode, show_plot=True, output_file=''):
         plt.xlabel("Log(X)")
         plt.ylabel("Log(F(X))")
         plt.savefig((output_file + ".png"))
-        #plt.show()
+        plt.show()
 
 
 def compute_2DPHD_from_file(input_file, show_plot=True, output_file=''):
@@ -320,9 +323,80 @@ def compute_2DPHD_from_file(input_file, show_plot=True, output_file=''):
     compute_2DPHD(persist, show_plot, output_file)
 
 
+def slinding_window_conv(time_grid, filter_size, dim, Tau, dT):
+    num_x = len(time_grid) - filter_size + 1
+    num_y = len(time_grid[0]) - filter_size + 1
+
+    convolutions = []
+    iteration = 0
+    for y in num_y:
+        for x in num_x:
+            convolution = [[time_grid[i][j][k] for j, k in range(len(time_grid[0])) 
+                                if x <= j <= x + filter_size - 1 and y <= k <= j + filter_size - 1] for i in range(len(time_grid))]
+            convolutions.append(["conv_%s" % iteration, convolution])
+            iteration += 1
+    
+    
+    pool = Pool(processes=50)              # start 4 worker processes
+
+        # print "[0, 1, 4,..., 81]"
+
+    print(pool.map(sliding_window, convolutions))
+
+
+def sliding_window(X):
+    dim = 30
+    Tau = 1
+    dT = 1
+    XS = getSlidingWindowVideo(X[1], dim, Tau, dT)
+
+    #Mean-center and normalize sliding window
+    XS = XS - np.mean(XS, 1)[:, None]
+    XS = XS/np.sqrt(np.sum(XS**2, 1))[:, None]
+
+    #Get persistence diagrams
+    dgms = ripser(XS)['dgms']
+
+    #Do PCA for visualization
+    pca = PCA(n_components = 3)
+    Y = pca.fit_transform(XS)
+
+
+    fig = plt.figure(figsize=(12, 6))
+    plt.subplot(121)
+    plot_dgms(barcode)
+    plt.title("1D Persistence Diagram %s" % X[0])
+
+    c = plt.get_cmap('nipy_spectral')
+    C = c(np.array(np.round(np.linspace(0, 255, Y.shape[0])), dtype=np.int32))
+    C = C[:, 0:3]
+    ax2 = fig.add_subplot(122, projection = '3d')
+    ax2.set_title("PCA of Sliding Window Embedding")
+    ax2.scatter(Y[:, 0], Y[:, 1], Y[:, 2], c=C)
+    ax2.set_aspect('equal', 'datalim')
+    plt.savefig(X[0] + ".png")
+    plt.show()
 
 
 
+#   Chris Tralie's Sliding Window
+def getSlidingWindowVideo(I, dim, Tau, dT):
+    N = I.shape[0] #Number of frames
+    P = I.shape[1] #Number of pixels (possibly after PCA)
+    pix = np.arange(P)
+    NWindows = int(np.floor((N-dim*Tau)/dT))
+    X = np.zeros((NWindows, dim*P))
+    idx = np.arange(N)
+    for i in range(NWindows):
+        idxx = dT*i + Tau*np.arange(dim)
+        start = int(np.floor(idxx[0]))
+        end = int(np.ceil(idxx[-1]))+2
+        if end >= I.shape[0]:
+            X = X[0:i, :]
+            break
+        f = scipy.interpolate.interp2d(pix, idx[start:end+1], I[idx[start:end+1], :], kind='linear')
+        X[i, :] = f(pix, idxx).flatten()
+    return X
 
 
 
