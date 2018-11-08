@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-|PyPI version| |Travis-CI| |Appveyor| |Codecov| |License: MIT|
+|PyPI version| |Travis-CI| |Appveyor| |Codecov|
 
 
 Cube2D.py
@@ -17,11 +17,11 @@ Cube2D.py is a persistent homologu package which computes persistence on two-dim
 - filtering binary images according to L1, L2 and Linf distances,
 - visualizing filtered binary images. 
 
-Additionally, through extensive testing and continuous integration, Cube2D.py is easy to install on Mac, Linux, and Windows platforms.
+Additionally, through extensive testing and continuous integration, Cube2D.py is easy to install on Mac, Linux and Windows platforms.
 
 We supply a large set of interactive notebooks that demonstrate how to take advantage of all the features available.
 
-You can find the source code on github at `Scikit-TDA/Ripser.py <https://github.com/scikit-tda/Cube2D.py>`_. For the original C++ library, see `CubicalRipser/CubicalRipser_2dim/ <https://github.com/CubicalRipser/CubicalRipser_2dim/releases/latest>`_.
+You can find the source code on github at `Scikit-TDA/Cube2D.py <https://github.com/scikit-tda/Cube2D.py>`_. For the original C++ library, see `CubicalRipser/CubicalRipser_2dim/ <https://github.com/CubicalRipser/CubicalRipser_2dim/releases/latest>`_.
 
 Example Usage
 -------------
@@ -41,11 +41,12 @@ Example Usage
     :caption: Background
 
     about
-    Basic Usage
-
+    
 .. toctree::
     :maxdepth: 2
     :caption: Tutorials
+    
+    Cubical Ripser.ipynb
 
 .. toctree::
     :maxdepth: 2
@@ -65,7 +66,4 @@ Example Usage
 
 .. |Codecov| image:: https://codecov.io/gh/scikit-tda/ripser.py/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/scikit-tda/ripser.py
-
-.. |License: MIT| image:: https://img.shields.io/badge/License-MIT-yellow.svg
-   :target: https://opensource.org/licenses/MIT)
 
