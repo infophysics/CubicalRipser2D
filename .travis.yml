@@ -10,4 +10,5 @@ python:
 install:
   -  pip install -r requirements.txt
 script:
-  -  Cube2D
+  -  python3 setup.py install
+  -  python3 Cube2D.py
