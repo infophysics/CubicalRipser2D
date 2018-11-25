@@ -13,7 +13,7 @@ env:
     # List package dependencies for conda
     - CONDA_DEPS="pytest numpy cmake scipy matplotlib"
     # package name for test invocation
-    - PACKAGENAME="cube2d"
+    - PACKAGENAME="Cube2D.py"
 
 before_install:
 # Here we download miniconda and install the dependencies
